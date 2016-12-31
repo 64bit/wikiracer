@@ -1,7 +1,7 @@
 from cache.hierarchical_cache import HierarchicalCache as HierCache
 from cache.memory_cache import MemoryCache as MemCache
 from cache.db_cache import DBCache
-from dbstore import DBStore
+from store.sqlitestore import SqliteStore
 import api
 
 class WikiGraph():
@@ -11,7 +11,7 @@ class WikiGraph():
     memcache = MemCache()
     
     # db store
-    dbstore = DBStore({"dbname": "graph.db"})
+    dbstore = SqliteStore({"dbname": "graph.db"})
 
     # db cache
     dbcache = DBCache(dbstore)

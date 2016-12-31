@@ -8,7 +8,7 @@ from wiki_graph import WikiGraph
 from algorithm.bfs import BFS
 from algorithm.iddfs import IDDFS
 import api
-from dbstore import DBStore
+from store.sqlitestore import SqliteStore
 
 def find_path(start_page, end_page, algo):
   graph = WikiGraph()
@@ -35,7 +35,7 @@ def fetch_pages(start, end):
   end_title = title(end)
 
   # initialize database store object
-  dbstore = DBStore({"dbname": "graph.db"})  
+  dbstore = SqliteStore({"dbname": "graph.db"})  
 
   # read pages from db (might have been cached earlier)
   start_pages = dbstore.get_page_from_url_title(start_title)

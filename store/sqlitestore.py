@@ -1,6 +1,7 @@
 import sqlite3
+from store import Store
 
-class DBStore():
+class SqliteStore(Store):
 
   # store (pageid, title, fullurl)
   SQL_CREATE_PAGE_TABLE = '''
@@ -41,8 +42,8 @@ class DBStore():
     
   def __create_tables__(self, config):
     curs = self.conn.cursor()
-    curs.execute(DBStore.SQL_CREATE_PAGE_TABLE)
-    curs.execute(DBStore.SQL_CREATE_LINK_TABLE)
+    curs.execute(SqliteStore.SQL_CREATE_PAGE_TABLE)
+    curs.execute(SqliteStore.SQL_CREATE_LINK_TABLE)
     self.conn.commit() 
     curs.close()
 
@@ -55,13 +56,13 @@ class DBStore():
 
   def get_page_links(self, pageid):
     curs = self.conn.cursor()
-    curs.execute(DBStore.SQL_QUERY_LINK, {"from_pageid": pageid})
+    curs.execute(SqliteStore.SQL_QUERY_LINK, {"from_pageid": pageid})
     links = curs.fetchall() 
     pageids = []
     for link in links:
       pageids.append(link[0])
     
-    curs.execute(DBStore.SQL_QUERY_PAGE % ",".join('?' * len(pageids)), pageids)
+    curs.execute(SqliteStore.SQL_QUERY_PAGE % ",".join('?' * len(pageids)), pageids)
     page_list = curs.fetchall()
     
     pages = self.pages_from_list(page_list) 
@@ -71,21 +72,21 @@ class DBStore():
   def save_page_links(self, pageid, pages):
     curs = self.conn.cursor()
     for page in pages:
-      curs.execute(DBStore.SQL_INSERT_PAGE, page)
-      curs.execute(DBStore.SQL_INSERT_LINK, { "from_pageid": pageid, "to_pageid": page["pageid"]})
+      curs.execute(SqliteStore.SQL_INSERT_PAGE, page)
+      curs.execute(SqliteStore.SQL_INSERT_LINK, { "from_pageid": pageid, "to_pageid": page["pageid"]})
     self.conn.commit()
     curs.close() 
 
   def save_pages(self, pages):
     curs = self.conn.cursor()
     for page in pages:
-      curs.execute(DBStore.SQL_INSERT_PAGE, page)
+      curs.execute(SqliteStore.SQL_INSERT_PAGE, page)
     self.conn.commit()
     curs.close()
 
   def get_page_from_id(self, pageid):
     curs = self.conn.cursor()
-    curs.execute(DBStore.SQL_QUERY_PAGE_ID, { "pageid" : pageid})
+    curs.execute(SqliteStore.SQL_QUERY_PAGE_ID, { "pageid" : pageid})
     page = curs.fetchone()
     return {
       "pageid" : page[0],
@@ -95,7 +96,7 @@ class DBStore():
 
   def get_page_from_url_title(self, url_title):
     curs = self.conn.cursor()
-    curs.execute(DBStore.SQL_QUERY_URL_TITLE, ("%/" + url_title,)) 
+    curs.execute(SqliteStore.SQL_QUERY_URL_TITLE, ("%/" + url_title,)) 
     page_list = curs.fetchall()
     pages = self.pages_from_list(page_list) 
     return pages
