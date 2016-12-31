@@ -47,13 +47,6 @@ class SqliteStore(Store):
     self.conn.commit() 
     curs.close()
 
-
-  def pages_from_list(self, page_list):
-    pages = []
-    for page in page_list:
-      pages.append({"pageid": page[0], "title": page[1], "fullurl": page[2]})    
-    return pages
-
   def get_page_links(self, pageid):
     curs = self.conn.cursor()
     curs.execute(SqliteStore.SQL_QUERY_LINK, {"from_pageid": pageid})

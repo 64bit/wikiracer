@@ -4,7 +4,10 @@ class Store():
     pass
 
   def pages_from_list(self, page_list):
-    pass
+    pages = []
+    for page in page_list:
+      pages.append({"pageid": page[0], "title": page[1], "fullurl": page[2]})
+    return pages
 
   def get_page_links(self, pageid):
     pass 
