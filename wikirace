@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+
+import sys
+import json
+import urlparse
+
+from wiki_graph import WikiGraph
+from algorithm.bfs import BFS
+from algorithm.iddfs import IDDFS
+import api
+from dbstore import DBStore
+
+def find_path(start_page, end_page, algo):
+  graph = WikiGraph()
+  config = {
+    "start_page": start_page,
+    "end_page": end_page
+  }
+  algorithm = algo(config, graph)
+  algorithm.run()
+  return algorithm.path()
+
+def find(pages, url):
+  for page in pages:
+    if(page["fullurl"] == url):
+      return page
+  return None
+
+def title(url):
+  path = urlparse.urlparse(url).path
+  return path.split("/")[-1] 
+
+def fetch_pages(start, end):
+  start_title = title(start)
+  end_title = title(end)
+
+  # initialize database store object
+  dbstore = DBStore({"dbname": "graph.db"})  
+
+  # read pages from db (might have been cached earlier)
+  start_pages = dbstore.get_page_from_url_title(start_title)
+  end_pages = dbstore.get_page_from_url_title(end_title) 
+
+  # make single API call for missing pages
+  missing_titles = []
+  if(len(start_pages) == 0):
+      missing_titles += [start_title]
+  if(len(end_pages) == 0):
+      missing_titles += [end_title]
+
+  pages = []
+  if(len(missing_titles) > 0):
+    pages = api.info_for_titles(missing_titles)
+    # save pages in db ( for caching )
+    dbstore.save_pages(pages) 
+  return start_pages + end_pages + pages
+
+def main(start, end, algo):
+
+  # fetch pages from db ( or network if not cached)
+  pages = fetch_pages(start, end) 
+  start_page = find(pages, start)
+  end_page = find(pages, end)
+
+  # find path between the two pages 
+  path = find_path(start_page, end_page, algo)
+  return { 
+    "start": start,
+    "end": end,
+    "path": path
+  }
+
+def validate_input():
+  # need one input
+  if len(sys.argv) < 2:
+    return (False,)
+  # input should be valid json with required keys
+  try:
+    jsn = json.loads(sys.argv[1])
+    start = jsn["start"]
+    end = jsn["end"]
+  except Exception, e: 
+    print "Invalid input JSON"
+    return (False,)
+  return (True, start, end)
+
+def usage():
+  print("usage: " +  sys.argv[0] + ''' '{
+    "start": "<starting article>",
+    "end": "<ending article>"
+  }' [ID-DFS]''')
+
+if __name__ == "__main__":
+  isvalid = validate_input()
+  if(isvalid[0]):
+    algo = BFS if len(sys.argv) == 2 else IDDFS
+    output = main(isvalid[1], isvalid[2], algo)
+    print json.dumps(output, indent=2, separators=(',', ': '))
+  else:
+    usage()
+    exit(1)
