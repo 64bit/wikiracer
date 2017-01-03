@@ -54,3 +54,23 @@ class Neo4jStore(Store):
     session.close()
     return [page]
 
+  def supports_path_query(self):
+    return True
+
+  def get_path(self, start_pageid, end_pageid):
+    if start_pageid == end_pageid:
+      return [self.get_page_from_id(start_pageid)]
+
+    session = self.driver.session()
+    result = session.run('match p=shortestPath( (s:Page {pageid: {from_pageid}})-[:L*..10]->(e:Page {pageid: {to_pageid}}) ) return p', {'from_pageid': start_pageid, 'to_pageid': end_pageid })
+    try:
+      record = result .single()
+      path = record.values()[0]
+      nodes = path.nodes
+      pages = []
+      for node in nodes:
+        pages.append(node.properties)
+    except:
+      session.close()
+      return []
+    return pages 

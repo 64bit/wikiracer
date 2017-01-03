@@ -23,3 +23,9 @@ class Store():
 
   def get_page_from_url_title(self, url_title):
     pass
+
+  def supports_path_query(self):
+    return False
+
+  def get_path(self, from_pageid, to_pageid):
+    return [] 

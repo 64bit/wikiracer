@@ -37,3 +37,10 @@ class WikiGraph():
   
   def page(self, pageid):
     return self.dbstore.get_page_from_id(pageid)
+
+  # offloads the path computation to backend store
+  def path(self, from_pageid, to_pageid):
+    if self.dbstore.supports_path_query():
+      return self.dbstore.get_path(from_pageid, to_pageid)
+    return []
+      

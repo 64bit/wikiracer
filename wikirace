@@ -17,6 +17,10 @@ def find_path(start_page, end_page, algo):
     "start_page": start_page,
     "end_page": end_page
   }
+  path = graph.path(start_page['pageid'], end_page['pageid'])
+  # got path no need to run algo
+  if len(path) > 0:
+    return map(lambda node: node['fullurl'], path)  
   algorithm = algo(config, graph)
   algorithm.run()
   return algorithm.path()
