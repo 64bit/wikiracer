@@ -6,17 +6,17 @@ class BFS(Algorithm):
   def __init__(self, config, graph):
     super(BFS, self).__init__(config, graph)
 
-  def debug(self, size):
-    if(size % 100 == 0):
-      print("current bfs Q size: %d" % size)
+  def debug(self, pageid):
+    print("current page: ", pageid )
+    page = self.graph.page(pageid) 
+    print("page: ", page)
 
   def run(self):
     q  = deque()
     q.append(self.start_page["pageid"])
-
     while( len(q) > 0 and not self.found):
-      #self.debug(len(q)) 
       pageid = q.popleft()
+      #self.debug(pageid)
       page_links = self.graph.adj(pageid)
       for page_link in page_links:
         

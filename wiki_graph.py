@@ -2,6 +2,7 @@ from cache.hierarchical_cache import HierarchicalCache as HierCache
 from cache.memory_cache import MemoryCache as MemCache
 from cache.db_cache import DBCache
 from store.sqlitestore import SqliteStore
+from store.neo4jstore import Neo4jStore
 import api
 
 class WikiGraph():
@@ -11,7 +12,8 @@ class WikiGraph():
     memcache = MemCache()
     
     # db store
-    dbstore = SqliteStore({"dbname": "graph.db"})
+    #dbstore = SqliteStore({"dbname": "graph.db"})
+    dbstore = Neo4jStore()
 
     # db cache
     dbcache = DBCache(dbstore)
