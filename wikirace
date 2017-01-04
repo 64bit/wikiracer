@@ -11,8 +11,8 @@ import api
 from store.sqlitestore import SqliteStore
 from store.neo4jstore import Neo4jStore
 
-def find_path(start_page, end_page, algo):
-  graph = WikiGraph()
+def find_path(start_page, end_page, algo, dbstore):
+  graph = WikiGraph({'dbstore': dbstore})
   config = {
     "start_page": start_page,
     "end_page": end_page
@@ -35,13 +35,9 @@ def title(url):
   path = urlparse.urlparse(url).path
   return path.split("/")[-1] 
 
-def fetch_pages(start, end):
+def fetch_pages(start, end, dbstore):
   start_title = title(start)
   end_title = title(end)
-
-  # initialize database store object
-  #dbstore = SqliteStore({"dbname": "graph.db"})  
-  dbstore = Neo4jStore()
 
   # read pages from db (might have been cached earlier)
   start_pages = dbstore.get_page_from_url_title(start_title)
@@ -63,13 +59,17 @@ def fetch_pages(start, end):
 
 def main(start, end, algo):
 
+  # initialize database store object
+  dbstore = Neo4jStore()
+  #dbstore = SqliteStore({'dbname': 'graph.db'})
+
   # fetch pages from db ( or network if not cached)
-  pages = fetch_pages(start, end) 
+  pages = fetch_pages(start, end, dbstore) 
   start_page = find(pages, start)
   end_page = find(pages, end)
 
   # find path between the two pages 
-  path = find_path(start_page, end_page, algo)
+  path = find_path(start_page, end_page, algo, dbstore)
   return { 
     "start": start,
     "end": end,
