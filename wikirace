@@ -90,7 +90,7 @@ def main(start, end, algo, config):
 def validate_input():
   # need one input
   if len(sys.argv) < 2:
-    return (False,)
+    return (False, "", "")
   # input should be valid json with required keys
   try:
     jsn = json.loads(sys.argv[1])
@@ -98,7 +98,7 @@ def validate_input():
     end = jsn["end"]
   except Exception, e: 
     print "Invalid input JSON"
-    return (False,)
+    return (False, "", "")
   return (True, start, end)
 
 def usage():
