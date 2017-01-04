@@ -3,6 +3,7 @@
 import sys
 import json
 import urlparse
+import configparser
 
 from wiki_graph import WikiGraph
 from algorithm.bfs import BFS
@@ -57,11 +58,21 @@ def fetch_pages(start, end, dbstore):
     dbstore.save_pages(pages) 
   return start_pages + end_pages + pages
 
-def main(start, end, algo):
+def get_store(config):
+  defaults = config['defaults']
+  which_store = defaults['dbstore']
+  store_config = config[which_store]
+  all_store = {
+    'sqlitestore': SqliteStore,
+    'neo4jstore': Neo4jStore
+  }
+  return all_store[which_store](store_config)
+  
 
-  # initialize database store object
-  dbstore = Neo4jStore()
-  #dbstore = SqliteStore({'dbname': 'graph.db'})
+def main(start, end, algo, config):
+
+  # initialize  database store object
+  dbstore = get_store(config) 
 
   # fetch pages from db ( or network if not cached)
   pages = fetch_pages(start, end, dbstore) 
@@ -94,13 +105,26 @@ def usage():
   print("usage: " +  sys.argv[0] + ''' '{
     "start": "<starting article>",
     "end": "<ending article>"
-  }' [ID-DFS]''')
+  }' ''')
+
+def read_config():
+  cfg = configparser.ConfigParser()
+  cfg.read('settings.cfg')
+  return cfg
+
+def get_algo(which_algo):
+  all_algo = {
+    'BFS': BFS,
+    'IDDFS': IDDFS
+  }
+  return all_algo[which_algo]
 
 if __name__ == "__main__":
-  isvalid = validate_input()
-  if(isvalid[0]):
-    algo = BFS if len(sys.argv) == 2 else IDDFS
-    output = main(isvalid[1], isvalid[2], algo)
+  isvalid, start, end = validate_input()
+  if(isvalid):
+    cfg = read_config()
+    algo = get_algo(cfg['defaults']['algo']) 
+    output = main(start, end, algo, cfg)
     print json.dumps(output, indent=2, separators=(',', ': '))
   else:
     usage()

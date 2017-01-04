@@ -3,8 +3,13 @@ import copy
 from neo4j.v1 import GraphDatabase, basic_auth
 
 class Neo4jStore(Store):
-  def __init__(self):
-    self.driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "nj"))
+  def __init__(self, config):
+    self.schema = config['scheme']
+    self.host = config['host']
+    self.port = config['port']
+    self.username = config['username']
+    self.password = config['password']
+    self.driver = GraphDatabase.driver(self.schema + "://" + self.host + ":" + self.port, auth=basic_auth(self.username, self.password))
 
   def get_page_links(self, pageid):
     session = self.driver.session()
